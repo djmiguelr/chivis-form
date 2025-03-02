@@ -48,6 +48,12 @@ async function appendToSheet(values: string[], accessToken: string) {
   return response.json();
 }
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': 'https://app.chivisclothes.com',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Accept, Origin'
+};
+
 export default async function handler(
   req: Request
 ) {
@@ -161,4 +167,4 @@ function signRS256(input: string, privateKey: string): string {
   // Aquí deberías implementar la firma RS256
   // Por seguridad, te recomiendo usar una biblioteca de JWT en lugar de esta implementación
   return 'signature';
-} 
+}

@@ -1,9 +1,7 @@
 import type { FormData } from '../types';
 
 export class GoogleSheetsService {
-  private readonly API_URL = process.env.NODE_ENV === 'production'
-    ? 'https://voltajedigital.com/chivis-api/submit-form'
-    : '/api/submit-form';
+  private readonly API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/submit-form';
 
   async appendData(data: FormData): Promise<{ success: boolean; data?: any }> {
     try {
@@ -14,41 +12,27 @@ export class GoogleSheetsService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Origin': 'https://app.chivisclothes.com'
         },
         mode: 'cors',
-        body: JSON.stringify({
-          ...data,
-          timestamp: new Date().toISOString()
-        }),
+        body: JSON.stringify(data),
       });
 
-      const responseText = await response.text();
-      console.log('Respuesta del servidor:', responseText);
-
-      let jsonResponse;
-      try {
-        jsonResponse = JSON.parse(responseText);
-      } catch (e) {
-        console.error('Error al parsear respuesta:', e);
-        throw new Error(`Respuesta no válida: ${responseText}`);
-      }
-
       if (!response.ok) {
-        const errorMessage = jsonResponse.error?.message || jsonResponse.error || 'Error al enviar los datos';
-        throw new Error(errorMessage);
+        throw new Error(`Error HTTP: ${response.status}`);
       }
 
+      const jsonResponse = await response.json();
       console.log('Respuesta exitosa:', jsonResponse);
       return jsonResponse;
     } catch (error: any) {
       console.error('Error detallado:', {
         message: error.message,
         stack: error.stack,
-        name: error.name,
-        cause: error.cause
+        name: error.name
       });
-      throw new Error(error.message || 'Error desconocido');
+      throw new Error(error.message || 'Error al enviar los datos');
     }
   }
-} 
+}
