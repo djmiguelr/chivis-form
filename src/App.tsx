@@ -5,6 +5,7 @@ import ReactConfetti from 'react-confetti';
 import { GoogleSheetsService } from './utils/googleSheets';
 import type { FormData, Question } from './types';
 import { Alert } from './components/Alert';
+import Select from 'react-select';
 
 function App() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -17,6 +18,7 @@ function App() {
     ciudad: '',
     ciudadOtra: '',
     edad: '',
+    whatsappNumber: '',
     ocupacion: '',
     estilo: '',
     estiloOtro: '',
@@ -95,6 +97,27 @@ function App() {
         { value: '45-54', label: '45-54 años' },
         { value: '55plus', label: '55 años o más' }
       ]
+    },
+    {
+      id: 'whatsappNumber',
+      question: '¿Cuál es tu número de WhatsApp?',
+      type: 'phone',
+      content: (
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">¿Cuál es tu número de WhatsApp?</h3>
+          <input
+            type="text"
+            value={formData.whatsappNumber}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '');
+              setFormData({ ...formData, whatsappNumber: value });
+            }}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            placeholder="Ingresa tu número de WhatsApp"
+            maxLength={10}
+          />
+        </div>
+      )
     },
     {
       id: 'ocupacion',
@@ -222,6 +245,7 @@ function App() {
         ciudad: formData.ciudad === 'otra' ? formData.ciudadOtra || '' : formData.ciudad,
         ciudadOtra: formData.ciudadOtra,
         edad: formData.edad,
+        whatsappNumber: formData.whatsappNumber,
         ocupacion: formData.ocupacion,
         estilo: formData.estilo === 'otro' ? formData.estiloOtro || '' : formData.estilo,
         estiloOtro: formData.estiloOtro,
@@ -263,6 +287,15 @@ function App() {
         return;
       }
     }
+
+    if (currentQuestion.type === 'phone') {
+      const value = formData.whatsappNumber;
+      if (!value || value.length < 10) {
+        setAlertMessage('Por favor, ingresa un número de WhatsApp válido (10 dígitos)');
+        setShowAlert(true);
+        return;
+      }
+    }
     
     if (currentQuestion.type === 'terms' && !formData.aceptaTerminos) {
       setAlertMessage('Debes aceptar los términos y condiciones para continuar');
@@ -290,6 +323,25 @@ function App() {
       return currentQuestion.content;
     }
 
+    if (currentQuestion.type === 'phone') {
+      return (
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">{currentQuestion.question}</h3>
+          <input
+            type="text"
+            value={formData.whatsappNumber}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '');
+              setFormData({ ...formData, whatsappNumber: value });
+            }}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            placeholder="Ingresa tu número de WhatsApp"
+            maxLength={10}
+          />
+        </div>
+      );
+    }
+
     if (currentQuestion.type === 'textarea') {
       return (
         <div>
@@ -308,51 +360,93 @@ function App() {
       );
     }
 
-    return (
-      <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">{currentQuestion.question}</h3>
-        <div className="space-y-3">
-          {currentQuestion.options?.map((option) => (
-            <label key={option.value} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-              <input
-                type="radio"
-                name={currentQuestion.id}
-                value={option.value}
-                checked={formData[currentQuestion.id as keyof FormData] === option.value}
-                onChange={(e) => {
-                  if (currentQuestion.type === 'select-other' && option.value === 'otro') {
-                    setFormData({
-                      ...formData,
-                      [currentQuestion.id]: e.target.value,
-                      [`${currentQuestion.id}Otro`]: ''
-                    });
-                  } else {
-                    setFormData({ ...formData, [currentQuestion.id]: e.target.value });
+    if (currentQuestion.type === 'select' || currentQuestion.type === 'select-other') {
+      if (currentQuestion.id === 'ciudad') {
+        return (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">{currentQuestion.question}</h3>
+            <Select
+              options={currentQuestion.options?.map(option => ({
+                value: option.value,
+                label: option.label
+              }))}
+              value={currentQuestion.options?.find(option => option.value === formData[currentQuestion.id as keyof FormData])}
+              onChange={(selectedOption) => {
+                if (selectedOption) {
+                  setFormData({
+                    ...formData,
+                    [currentQuestion.id]: selectedOption.value,
+                    ciudadOtra: selectedOption.value === 'otra' ? '' : formData.ciudadOtra
+                  });
+                }
+              }}
+              placeholder="Selecciona tu ciudad"
+              className="react-select-container"
+              classNamePrefix="react-select"
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  borderColor: '#e5e7eb',
+                  '&:hover': {
+                    borderColor: '#ec4899'
+                  },
+                  boxShadow: 'none',
+                  '&:focus-within': {
+                    borderColor: '#ec4899',
+                    boxShadow: '0 0 0 1px #ec4899'
                   }
-                }}
-                className="text-pink-600 focus:ring-pink-500"
+                }),
+                option: (base, state) => ({
+                  ...base,
+                  backgroundColor: state.isSelected ? '#ec4899' : state.isFocused ? '#fce7f3' : 'white',
+                  '&:active': {
+                    backgroundColor: '#ec4899'
+                  }
+                })
+              }}
+            />
+            {formData[currentQuestion.id as keyof FormData] === 'otra' && (
+              <input
+                type="text"
+                value={formData.ciudadOtra || ''}
+                onChange={(e) => setFormData({ ...formData, ciudadOtra: e.target.value })}
+                placeholder="Especifica tu ciudad"
+                className="mt-2 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
               />
-              <span className="text-gray-700">{option.label}</span>
-            </label>
-          ))}
-          {currentQuestion.type === 'select-other' &&
-           formData[currentQuestion.id as keyof FormData] === 'otro' && (
+            )}
+          </div>
+        );
+      }
+      return (
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">{currentQuestion.question}</h3>
+          <div className="space-y-3">
+            {currentQuestion.options?.map((option) => (
+              <label key={option.value} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                <input
+                  type="radio"
+                  name={currentQuestion.id}
+                  value={option.value}
+                  checked={formData[currentQuestion.id as keyof FormData] === option.value}
+                  onChange={(e) => setFormData({ ...formData, [currentQuestion.id]: e.target.value })}
+                  className="text-pink-600 focus:ring-pink-500"
+                />
+                <span className="text-gray-700">{option.label}</span>
+              </label>
+            ))}
+          </div>
+          {((currentQuestion.type as string) === 'select-other' && formData[currentQuestion.id as keyof FormData] === 'otro' && currentQuestion.id === 'estilo') && (
             <input
               type="text"
-              value={formData[`${currentQuestion.id}Otro` as keyof FormData] as string || ''}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  [`${currentQuestion.id}Otro`]: e.target.value
-                })
-              }
-              placeholder="Especifica..."
+              value={formData.estiloOtro || ''}
+              onChange={(e) => setFormData({ ...formData, estiloOtro: e.target.value })}
+              placeholder="Especifica tu estilo"
               className="mt-2 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
             />
           )}
         </div>
-      </div>
-    );
+      );
+    }
   };
 
   return (

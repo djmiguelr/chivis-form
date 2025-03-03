@@ -104,6 +104,7 @@ app.post('/api/submit-form', async (req, res) => {
       body.compraPreferencia || '',
       body.ciudad || '',
       body.edad || '',
+      body.whatsappNumber || '',
       body.ocupacion || '',
       body.estilo || '',
       body.experiencia || '',

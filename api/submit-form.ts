@@ -32,7 +32,7 @@ async function getAccessToken() {
 
 async function appendToSheet(values: string[], accessToken: string) {
   const response = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${process.env.SPREADSHEET_ID}/values/Respuestas!A:J:append?valueInputOption=USER_ENTERED`,
+    `https://sheets.googleapis.com/v4/spreadsheets/${process.env.SPREADSHEET_ID}/values/Respuestas!A:K:append?valueInputOption=USER_ENTERED`,
     {
       method: 'POST',
       headers: {
@@ -89,6 +89,7 @@ export default async function handler(
       body.compraPreferencia || '',
       body.ciudad || '',
       body.edad || '',
+      body.whatsappNumber || '',
       body.ocupacion || '',
       body.estilo || '',
       body.experiencia || '',

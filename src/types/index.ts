@@ -4,6 +4,7 @@ export interface FormData {
   ciudad: string;
   ciudadOtra?: string;
   edad: string;
+  whatsappNumber: string;
   ocupacion: string;
   estilo: string;
   estiloOtro?: string;
@@ -20,9 +21,9 @@ export interface Option {
 
 export interface Question {
   id: string;
-  type: 'welcome' | 'select' | 'select-other' | 'textarea' | 'terms' | 'thanks';
+  type: 'welcome' | 'select' | 'select-other' | 'textarea' | 'terms' | 'thanks' | 'phone';
   question?: string;
   description?: string;
   options?: Option[];
-  content?: React.ReactNode;
-} 
+  content?: JSX.Element;
+}
