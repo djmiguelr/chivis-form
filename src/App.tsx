@@ -4,10 +4,13 @@ import { FaWhatsapp } from 'react-icons/fa';
 import ReactConfetti from 'react-confetti';
 import { GoogleSheetsService } from './utils/googleSheets';
 import type { FormData, Question } from './types';
+import { Alert } from './components/Alert';
 
 function App() {
   const [currentStep, setCurrentStep] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
   const [formData, setFormData] = useState<FormData>({
     timestamp: '',
     compraPreferencia: '',
@@ -243,23 +246,27 @@ function App() {
       const value = formData[currentQuestion.id as keyof FormData];
       
       if (currentQuestion.id === 'ciudad' && value === 'otra' && !formData.ciudadOtra) {
-        alert('Por favor, especifica tu ciudad');
+        setAlertMessage('Por favor, especifica tu ciudad');
+        setShowAlert(true);
         return;
       }
       
       if (currentQuestion.id === 'estilo' && value === 'otro' && !formData.estiloOtro) {
-        alert('Por favor, especifica tu estilo');
+        setAlertMessage('Por favor, especifica tu estilo');
+        setShowAlert(true);
         return;
       }
       
       if (!value) {
-        alert('Por favor, selecciona una opción');
+        setAlertMessage('Por favor, selecciona una opción');
+        setShowAlert(true);
         return;
       }
     }
     
     if (currentQuestion.type === 'terms' && !formData.aceptaTerminos) {
-      alert('Debes aceptar los términos y condiciones para continuar');
+      setAlertMessage('Debes aceptar los términos y condiciones para continuar');
+      setShowAlert(true);
       return;
     }
 
@@ -268,83 +275,15 @@ function App() {
     }
   };
 
-  const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
-    setFormData(prev => ({ ...prev, [name]: newValue }));
-  };
-
-  const currentQuestion = questions[currentStep];
-  const progress = ((currentStep) / (questions.length - 1)) * 100;
-
-  const renderSelect = (question: Question) => {
-    if (!question.options) return null;
-    
-    return (
-      <select
-        name={question.id}
-        value={formData[question.id as keyof FormData] as string}
-        onChange={handleInputChange}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-        required
-      >
-        <option value="">Selecciona una opción</option>
-        {question.options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    );
-  };
-
-  const renderQuestion = () => {
-    if (currentQuestion.type === 'welcome' || currentQuestion.type === 'thanks' || currentQuestion.type === 'terms') {
-      return currentQuestion.content;
-    }
-
-    return (
-      <>
-        <h2 className="text-xl font-bold text-gray-800 mb-6">{currentQuestion.question}</h2>
-        {currentQuestion.type === 'select' && renderSelect(currentQuestion)}
-        {currentQuestion.type === 'select-other' && (
-          <div className="space-y-4">
-            {renderSelect(currentQuestion)}
-            {formData[currentQuestion.id as keyof FormData] === 'otro' && (
-              <input
-                type="text"
-                name={`${currentQuestion.id}Otro`}
-                value={formData[`${currentQuestion.id}Otro` as keyof FormData] as string}
-                onChange={handleInputChange}
-                placeholder={`Especifica tu ${currentQuestion.id}`}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                required
-              />
-            )}
-          </div>
-        )}
-        {currentQuestion.type === 'textarea' && (
-          <textarea
-            name={currentQuestion.id}
-            value={formData[currentQuestion.id as keyof FormData] as string}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 h-32"
-            placeholder="Escribe tu sugerencia aquí (opcional)"
-          />
-        )}
-      </>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start p-4">
       {showConfetti && <ReactConfetti />}
+      {showAlert && (
+        <Alert
+          message={alertMessage}
+          onClose={() => setShowAlert(false)}
+        />
+      )}
       
       <div className="w-full max-w-md mb-8 mt-8">
         <img
