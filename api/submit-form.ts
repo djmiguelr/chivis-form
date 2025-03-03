@@ -5,8 +5,8 @@ export const config = {
 const corsHeaders = {
   'Access-Control-Allow-Credentials': 'true',
   'Access-Control-Allow-Origin': 'https://app.chivisclothes.com',
-  'Access-Control-Allow-Methods': 'GET,OPTIONS,PATCH,DELETE,POST,PUT',
-  'Access-Control-Allow-Headers': 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Origin',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Accept, Origin'
 };
 
 async function getAccessToken() {
@@ -48,11 +48,6 @@ async function appendToSheet(values: string[], accessToken: string) {
   return response.json();
 }
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://app.chivisclothes.com',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Accept, Origin'
-};
 
 export default async function handler(
   req: Request
