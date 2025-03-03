@@ -15,10 +15,29 @@ const port = process.env.PORT || 3000;
 
 // CORS configuration
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://app.chivisclothes.com'],
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'https://app.chivisclothes.com'],
   methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Accept', 'Origin']
+  allowedHeaders: ['Content-Type', 'Accept', 'Origin'],
+  exposedHeaders: ['Access-Control-Allow-Origin'],
+  credentials: true
 }));
+
+// Pre-flight requests
+app.options('*', cors());
+
+// Additional headers middleware
+app.use((req, res, next) => {
+  const allowedOrigins = ['http://localhost:3000', 'http://localhost:5173', 'https://app.chivisclothes.com'];
+  const origin = req.headers.origin;
+  
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Origin');
+  next();
+});
 
 app.use(express.json());
 
@@ -53,7 +72,7 @@ async function appendToSheet(values) {
     const response = await sheets.spreadsheets.values.append({
       auth,
       spreadsheetId: process.env.SPREADSHEET_ID,
-      range: 'Sheet1!A:J',
+      range: 'Respuestas!A:L',
       valueInputOption: 'RAW',
       requestBody: {
         values: [values]

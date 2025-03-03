@@ -1,7 +1,11 @@
 import type { FormData } from '../types';
 
 export class GoogleSheetsService {
-  private readonly API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/submit-form';
+  private readonly API_URL = import.meta.env.VITE_API_URL || 
+    (import.meta.env.PROD 
+      ? 'https://app.chivisclothes.com/api/submit-form'
+      : `${window.location.protocol}//${window.location.hostname}:3000/api/submit-form`);
+  private readonly ORIGIN = window.location.origin;
 
   async appendData(data: FormData): Promise<{ success: boolean; data?: any }> {
     try {
@@ -13,7 +17,7 @@ export class GoogleSheetsService {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Origin': 'https://app.chivisclothes.com'
+          'Origin': this.ORIGIN
         },
         mode: 'cors',
         body: JSON.stringify(data),
