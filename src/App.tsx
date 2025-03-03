@@ -275,6 +275,86 @@ function App() {
     }
   };
 
+  const progress = Math.round((currentStep / (questions.length - 1)) * 100);
+
+  const handlePrevious = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const renderQuestion = () => {
+    const currentQuestion = questions[currentStep];
+
+    if (currentQuestion.type === 'welcome' || currentQuestion.type === 'thanks' || currentQuestion.type === 'terms') {
+      return currentQuestion.content;
+    }
+
+    if (currentQuestion.type === 'textarea') {
+      return (
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">{currentQuestion.question}</h3>
+          {currentQuestion.description && (
+            <p className="text-gray-600 mb-4">{currentQuestion.description}</p>
+          )}
+          <textarea
+            value={formData[currentQuestion.id as keyof FormData] as string || ''}
+            onChange={(e) => setFormData({ ...formData, [currentQuestion.id]: e.target.value })}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            rows={4}
+            placeholder="Escribe tu respuesta aquí..."
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">{currentQuestion.question}</h3>
+        <div className="space-y-3">
+          {currentQuestion.options?.map((option) => (
+            <label key={option.value} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+              <input
+                type="radio"
+                name={currentQuestion.id}
+                value={option.value}
+                checked={formData[currentQuestion.id as keyof FormData] === option.value}
+                onChange={(e) => {
+                  if (currentQuestion.type === 'select-other' && option.value === 'otro') {
+                    setFormData({
+                      ...formData,
+                      [currentQuestion.id]: e.target.value,
+                      [`${currentQuestion.id}Otro`]: ''
+                    });
+                  } else {
+                    setFormData({ ...formData, [currentQuestion.id]: e.target.value });
+                  }
+                }}
+                className="text-pink-600 focus:ring-pink-500"
+              />
+              <span className="text-gray-700">{option.label}</span>
+            </label>
+          ))}
+          {currentQuestion.type === 'select-other' &&
+           formData[currentQuestion.id as keyof FormData] === 'otro' && (
+            <input
+              type="text"
+              value={formData[`${currentQuestion.id}Otro` as keyof FormData] as string || ''}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  [`${currentQuestion.id}Otro`]: e.target.value
+                })
+              }
+              placeholder="Especifica..."
+              className="mt-2 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            />
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start p-4">
       {showConfetti && <ReactConfetti />}
